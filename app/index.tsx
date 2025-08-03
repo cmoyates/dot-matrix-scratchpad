@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useFlickerFreeClock } from "~/hooks/flickerFreeClock";
 import { Text } from "~/components/ui/text";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const source = Skia.RuntimeEffect.Make(`
   uniform float2 u_circle_pos;
@@ -89,10 +90,12 @@ export default function Screen() {
 
   const circlePos = useSharedValue(vec(width / 2, height / 2));
 
-  const uniforms = useDerivedValue(() => {
-    // Calculate the pointer position based on the angle
+  const pointer = useSharedValue(vec(-1, -1));
 
-    const desiredPos = circleDesiredPos.value;
+  const uniforms = useDerivedValue(() => {
+    const pointerActive = pointer.value.x >= 0 && pointer.value.y >= 0;
+
+    const desiredPos = pointerActive ? pointer.value : circleDesiredPos.value;
     const currentPos = circlePos.value;
 
     const dx = desiredPos.x - currentPos.x;
@@ -120,13 +123,28 @@ export default function Screen() {
     };
   });
 
+  const gesture = Gesture.Pan()
+    .onBegin((event) => {
+      // Set the pointer position to the initial touch point
+      pointer.value = vec(event.x, event.y);
+    })
+    .onUpdate((event) => {
+      pointer.value = vec(event.x, event.y);
+    })
+    .onFinalize(() => {
+      // Reset the pointer position when the gesture ends
+      pointer.value = vec(-1, -1);
+    });
+
   return (
     <View className="flex-1 items-center justify-center gap-5 bg-secondary/30">
-      <Canvas style={{ flex: 1, width, height }}>
-        <Fill>
-          <Shader source={source as SkRuntimeEffect} uniforms={uniforms} />
-        </Fill>
-      </Canvas>
+      <GestureDetector gesture={gesture}>
+        <Canvas style={{ flex: 1, width, height }}>
+          <Fill>
+            <Shader source={source as SkRuntimeEffect} uniforms={uniforms} />
+          </Fill>
+        </Canvas>
+      </GestureDetector>
     </View>
   );
 }
