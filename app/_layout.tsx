@@ -16,6 +16,7 @@ import { useColorScheme } from "~/lib/useColorScheme";
 import { PortalHost } from "@rn-primitives/portal";
 import { ThemeToggle } from "~/components/ThemeToggle";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -42,22 +43,24 @@ export default function RootLayout() {
   const { isDarkColorScheme } = useColorScheme();
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background">
-      <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-        <Stack>
-          <Stack.Screen
-            name="index"
-            options={{
-              title: "Starter Base",
-              headerRight: () => <ThemeToggle />,
-              headerShown: false,
-            }}
-          />
-        </Stack>
-        <PortalHost />
-      </ThemeProvider>
-    </SafeAreaView>
+    <GestureHandlerRootView>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background">
+        <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+          <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+          <Stack>
+            <Stack.Screen
+              name="index"
+              options={{
+                title: "Starter Base",
+                headerRight: () => <ThemeToggle />,
+                headerShown: false,
+              }}
+            />
+          </Stack>
+          <PortalHost />
+        </ThemeProvider>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
